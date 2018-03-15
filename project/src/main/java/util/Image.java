@@ -1,8 +1,12 @@
 package util;
 
+import kross.util.Files;
+import sun.net.www.protocol.file.FileURLConnection;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Created by krosshuang on 2018/3/12.
@@ -61,6 +65,15 @@ public class Image {
 
     public int height() {
         return mBufferedImage.getHeight();
+    }
+
+    public void saveToFile(String filePath) {
+        File outputfile = new File(filePath);
+        try {
+            ImageIO.write(mBufferedImage, Files.getSuffixName(filePath), outputfile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 

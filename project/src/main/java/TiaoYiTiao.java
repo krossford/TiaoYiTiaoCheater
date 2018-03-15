@@ -1,4 +1,5 @@
 import kross.devtool.Log;
+import kross.util.DateTimes;
 import util.CloseColor;
 import util.Image;
 import util.NearPixelSet;
@@ -63,6 +64,8 @@ public class TiaoYiTiao {
         return p;
     }
 
+    public static boolean isFirstBaseShadowColor = true;
+
     public static float start(String imagePath) {
         Image image = Image.load(imagePath);
 
@@ -73,12 +76,28 @@ public class TiaoYiTiao {
         CloseColor backgroundShadowColor = new CloseColor(1);
         backgroundShadowColor.base(0xffb29594);
 
+        if (isFirstBaseShadowColor) {
+            for (int hx = 0; hx < image.height(); hx++) {
+                Image.Pixel px = image.getPixel(0, hx);
+                if (hx == 0) {
+                    backgroundColor.base(px.rgb);
+                } else {
+                    if (backgroundColor.isClose(px.rgb)) {
+
+                    } else {
+                        backgroundShadowColor.base(px.rgb);
+                        Log.i(LOG_TAG, "找到阴影色");
+                    }
+                }
+            }
+            isFirstBaseShadowColor = false;
+        }
+
         CloseColor playerColor = new CloseColor(2);
         playerColor.base(0xff393848);
         playerColor.base(0xff8e84ad);
 
         java.util.List<NearPixelSet> playerSetList = new ArrayList();
-        //NearPixelSet playerPxSet = new NearPixelSet();
 
         for (int hx = 0; hx < image.height(); hx++) {
             for (int wx = 0; wx < image.width(); wx++) {
@@ -118,6 +137,7 @@ public class TiaoYiTiao {
 
                     }
                 }
+
             }
         }
 
@@ -166,6 +186,11 @@ public class TiaoYiTiao {
 
         image.getImage().getGraphics().setColor(Color.BLACK);
         image.getImage().getGraphics().drawOval(nextCenter.x, nextCenter.y, 10, 10);
+        image.getImage().getGraphics().drawLine(playerX, playerY, nextCenter.x, nextCenter.y);
+
+        String time = DateTimes.timestamp2string("_yyyy_MM_dd_HH_mm_ss", System.currentTimeMillis());
+
+        image.saveToFile(time + ".png");
 
         float distance = (float) Math.sqrt(Math.pow(playerX - nextCenter.x, 2) + Math.pow(rect.bottom - nextCenter.y, 2));
 

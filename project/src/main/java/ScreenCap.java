@@ -34,13 +34,13 @@ public class ScreenCap {
         File f = new File(filePath);
         while (!isCaptured) {
             if (f.exists()) {
-                Log.i(LOG_TAG, "got it");
+                Log.i(LOG_TAG, "获取图片成功");
                 if (callback != null) {
                     callback.onCapFinished(f.getAbsolutePath());
                     isCaptured = true;
                 }
             } else {
-                Log.i(LOG_TAG, "no file");
+                Log.i(LOG_TAG, "获取图片中...");
             }
             try {
                 Thread.sleep(500);

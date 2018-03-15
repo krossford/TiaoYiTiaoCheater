@@ -9,6 +9,7 @@ import util.Rect;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.*;
 
 public class Main {
@@ -20,6 +21,7 @@ public class Main {
     }
 
     public static void fuck() {
+
         ScreenCap.screenCap(new ScreenCap.OnScreenCapFinished() {
             public void onCapFinished(String imagePath) {
                 float distance = TiaoYiTiao.start(imagePath);
