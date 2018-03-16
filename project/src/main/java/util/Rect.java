@@ -21,4 +21,12 @@ public class Rect {
 
         return sb.toString();
     }
+
+    public int width() {
+        return right - left + 1;
+    }
+
+    public int height() {
+        return bottom - top + 1;
+    }
 }

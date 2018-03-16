@@ -15,54 +15,104 @@ public class TiaoYiTiao {
 
     public static final String LOG_TAG = "TiaoYiTiao";
 
-    public static Image.Pixel findNextCenter(NearPixelSet maxSet) {
-        Image.Pixel theMostTopPx = null;
-        Image.Pixel theMostLeftPx = null;
+    public static class FindNextCenter {
 
-        for (Image.Pixel p : maxSet.mSet) {
-            if (theMostTopPx == null) {
-                theMostTopPx = p;
-            } else {
-                if (p.y < theMostTopPx.y) {
+        public static Image.Pixel findNextCenter(NearPixelSet maxSet) {
+            Image.Pixel theMostTopPx = null;
+            Image.Pixel theMostLeftPx = null;
+
+            for (Image.Pixel p : maxSet.mSet) {
+                if (theMostTopPx == null) {
                     theMostTopPx = p;
-                }
-            }
-
-            if (theMostLeftPx == null) {
-                theMostLeftPx = p;
-            } else {
-                if (p.x < theMostLeftPx.x) {
-                    theMostLeftPx = p;
-                }
-            }
-
-            //image.set(p.x, p.y , 0xff000000);
-        }
-
-        Image.Pixel theMostLeftTopPx = null;
-
-        for (Image.Pixel p : maxSet.mSet) {
-            if (p.x - theMostLeftPx.x <= 2) {
-                if (theMostLeftTopPx == null) {
-                    theMostLeftTopPx = p;
                 } else {
-                    if (p.y < theMostLeftTopPx.y) {
-                        theMostLeftTopPx = p;
+                    if (p.y < theMostTopPx.y) {
+                        theMostTopPx = p;
                     }
                 }
+
+                if (theMostLeftPx == null) {
+                    theMostLeftPx = p;
+                } else {
+                    if (p.x < theMostLeftPx.x) {
+                        theMostLeftPx = p;
+                    }
+                }
+
+                //image.set(p.x, p.y , 0xff000000);
             }
-        }
+
+            Rect rect = maxSet.getBoundRect();
+
+            Image.Pixel left = new Image.Pixel();
+            Image.Pixel right = new Image.Pixel();
+
+            int distanceAcc = 0;    // 左右两边点的距离
+            int fuckTimes = 0;
+
+            for (int y = theMostTopPx.y; y < rect.bottom; y++) {
+                for (int x = rect.left; x < rect.right; x++) {
+                    if (maxSet.getPx(x, y) != 0) {
+                        left.x = x;
+                        left.y = y;
+                        break;
+                    }
+                }
+
+                for (int x = rect.right; x > rect.left; x--) {
+                    if (maxSet.getPx(x, y) != 0) {
+                        right.x = x;
+                        right.y = y;
+                        break;
+                    }
+                }
+
+                if (distanceAcc == 0) {
+                    distanceAcc = right.x - left.x;
+                } else {
+                    int newDistanceAcc = right.x - left.x;
+                    if (newDistanceAcc > distanceAcc) {
+                        distanceAcc = newDistanceAcc;
+                        fuckTimes = 0;
+                    } else if (newDistanceAcc <= distanceAcc) {
+                        distanceAcc = newDistanceAcc;
+                        fuckTimes++;
+                    }
+                }
+                int distanceDelta = Math.abs(Math.abs(left.x - theMostTopPx.x) - Math.abs(right.x - theMostTopPx.x));
+                Log.i(LOG_TAG, "distanceDelta:" + distanceDelta + " distanceAcc: " + distanceAcc);
+
+                if (distanceDelta > 8 || fuckTimes >= 3) {
+                    Log.i(LOG_TAG, "find left anchor " + left.toString());
+                    break;
+                }
+            }
+
+//            Image.Pixel theMostLeftTopPx = null;
+//
+//            for (Image.Pixel p : maxSet.mSet) {
+//                if (p.x - theMostLeftPx.x <= 2) {
+//                    if (theMostLeftTopPx == null) {
+//                        theMostLeftTopPx = p;
+//                    } else {
+//                        if (p.y < theMostLeftTopPx.y) {
+//                            theMostLeftTopPx = p;
+//                        }
+//                    }
+//                }
+//            }
 
 //        image.set(theMostTopPx.x, theMostTopPx.y, 0xff000000);
 //        image.set(theMostLeftTopPx.x, theMostLeftTopPx.y, 0xff000000);
 //        image.set(theMostTopPx.x, theMostLeftTopPx.y, 0xff000000);
 
-        Image.Pixel p = new Image.Pixel();
-        p.x = theMostTopPx.x;
-        p.y = theMostLeftTopPx.y;
+            Image.Pixel p = new Image.Pixel();
+            p.x = theMostTopPx.x;
+            p.y = left.y;
 
-        return p;
+            return p;
+        }
     }
+
 
     public static boolean isFirstBaseShadowColor = true;
 
@@ -182,7 +232,7 @@ public class TiaoYiTiao {
 
         Log.i(LOG_TAG, "max set: " + maxSet.mSet.size());
 
-        Image.Pixel nextCenter = findNextCenter(maxSet);
+        Image.Pixel nextCenter = FindNextCenter.findNextCenter(maxSet);
 
         image.getImage().getGraphics().setColor(Color.BLACK);
         image.getImage().getGraphics().drawOval(nextCenter.x, nextCenter.y, 10, 10);
